@@ -3,8 +3,8 @@ const { Category, Product } = require("../../models");
 
 // The `/api/categories` endpoint
 
+// GET all categories with their products
 router.get("/", async (req, res) => {
-  // GET all categories with their products
   try {
     const allCategories = await Category.findAll({
       include: [{ model: Product, as: "products" }],
@@ -15,8 +15,8 @@ router.get("/", async (req, res) => {
   }
 });
 
+//GET category by id and it'll show the associated products as well
 router.get("/:id", async (req, res) => {
-  //GET category by id and it'll show the associated products as well
   try {
     const category = await Category.findByPk(req.params.id, {
       include: [{ model: Product }],
@@ -32,16 +32,53 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
-  // create a new category
+// POST - creates a new category
+router.post("/", async (req, res) => {
+  try {
+    const categoryData = await Category.create(req.body);
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-router.put("/:id", (req, res) => {
-  // update a category by its `id` value
+// PUT - updates a category by its `id` value
+router.put("/:id", async (req, res) => {
+  try {
+    const categoryData = await Category.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
+    // check if the category exists, if it doesn't it will send back an error message and stop running the request
+    if (!categoryData) {
+      res.status(404).json({ message: "No category found with this id" });
+      return;
+    }
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-router.delete("/:id", (req, res) => {
-  // delete a category by its `id` value
+// DELETE - deletes a category by its `id` value
+router.delete("/:id", async (req, res) => {
+  try {
+    const categoryData = await Category.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+    // check if the category exists, if it doesn't it will send back an error message and stop running the request
+    if (!categoryData) {
+      res.status(404).json({ message: "No category found with this id" });
+      return;
+    }
+    //sends back rows in db affected
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
